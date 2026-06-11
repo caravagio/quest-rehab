@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>QuestRehab — Your Adventure Awaits</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+<style>
+  /* ============ Storybook meadow theme ============ */
+  :root {
+    --sky: #C9E7F5;
+    --ink: #2E3A33;
+    --grass: #5FAE6B;
+    --grass-dark: #3F8A4C;
+    --sun: #FFC94D;
+    --sun-dark: #E8A91F;
+    --berry: #E2638C;
+    --paper: #FFFBEF;
+    --paper-edge: #EFE3C2;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    font-family: "Nunito", sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(ellipse 120% 60% at 50% 115%, var(--grass) 0 38%, transparent 39%),
+      linear-gradient(var(--sky), #EAF6FC 70%);
+    min-height: 100vh;
+    padding: 24px 16px 80px;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; }
+
+  h1, h2, .quest-title, button {
+    font-family: "Fredoka", sans-serif;
+  }
+  h1 { font-size: 2rem; letter-spacing: 0.5px; }
+  .subtitle { font-size: 1rem; opacity: 0.75; margin-top: 4px; }
+
+  /* ============ Signature element: the adventure map ============ */
+  .map {
+    margin: 24px 0 8px;
+    background: rgba(255,255,255,0.55);
+    border-radius: 20px;
+    padding: 12px 16px 4px;
+  }
+  .map svg { width: 100%; height: 72px; display: block; }
+  .map .path-line {
+    fill: none; stroke: var(--grass-dark); stroke-width: 3;
+    stroke-dasharray: 2 9; stroke-linecap: round; opacity: 0.6;
+  }
+  .map .stop { fill: #fff; stroke: var(--grass-dark); stroke-width: 3; }
+  .map .stop.done { fill: var(--sun); stroke: var(--sun-dark); }
+  .map-label { text-align: center; font-size: 0.8rem; opacity: 0.7; padding-bottom: 8px; }
+
+  /* ============ Story chapter card (paper) ============ */
+  .card {
+    background: var(--paper);
+    border: 2px solid var(--paper-edge);
+    border-radius: 18px;
+    padding: 22px 24px;
+    margin-top: 18px;
+    box-shadow: 0 6px 0 rgba(63,138,76,0.18);
+  }
+  .chapter-eyebrow {
+    font-size: 0.78rem; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--grass-dark);
+  }
+  .card h2 { font-size: 1.45rem; margin: 6px 0 12px; }
+  .story-text { font-size: 1.06rem; line-height: 1.65; }
+  .encouragement {
+    margin-top: 14px; font-weight: 700; color: var(--berry); font-style: italic;
+  }
+
+  /* ============ Quest card ============ */
+  .quest-card { background: #fff; border-color: #DCEFE0; }
+  .quest-title { font-size: 1.2rem; color: var(--grass-dark); }
+  .quest-amount { font-size: 2rem; font-family: "Fredoka"; margin: 6px 0; }
+  .quest-reason { opacity: 0.8; }
+  textarea {
+    width: 100%; margin-top: 14px; padding: 10px 12px;
+    border: 2px solid var(--paper-edge); border-radius: 12px;
+    font-family: "Nunito"; font-size: 0.95rem; resize: vertical; min-height: 56px;
+  }
+
+  /* ============ Buttons ============ */
+  button {
+    font-size: 1.1rem; font-weight: 600; letter-spacing: 0.3px;
+    border: none; border-radius: 999px; cursor: pointer;
+    padding: 14px 28px; margin-top: 16px;
+    background: var(--sun); color: var(--ink);
+    box-shadow: 0 4px 0 var(--sun-dark);
+    transition: transform 0.08s ease;
+  }
+  button:hover { transform: translateY(-2px); }
+  button:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--sun-dark); }
+  button:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+  button.secondary { background: #fff; box-shadow: 0 4px 0 #d8d2bd; font-size: 0.9rem; padding: 10px 20px; }
+  button:disabled { opacity: 0.5; cursor: wait; }
+
+  /* ============ Setup form ============ */
+  label { display: block; font-weight: 700; margin: 14px 0 4px; font-size: 0.95rem; }
+  input, select {
+    width: 100%; padding: 10px 12px; font-family: "Nunito"; font-size: 1rem;
+    border: 2px solid var(--paper-edge); border-radius: 12px; background: #fff;
+  }
+  .plan-row { display: grid; grid-template-columns: 1fr 130px; gap: 8px; margin-top: 8px; }
+  .hint { font-size: 0.8rem; opacity: 0.65; margin-top: 4px; }
+
+  .hidden { display: none; }
+  .loading { text-align: center; padding: 30px; font-family: "Fredoka"; font-size: 1.1rem; }
+  .adult-flag {
+    background: #FFF1F5; border: 2px solid var(--berry); border-radius: 14px;
+    padding: 14px 16px; margin-top: 14px; font-size: 0.95rem;
+  }
+  @media (prefers-reduced-motion: reduce) { button { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ================= SETUP SCREEN (first run, for the parent) ================= -->
+  <section id="setup">
+    <h1>🗺️ QuestRehab</h1>
+    <p class="subtitle">Turn physiotherapy exercises into an adventure story.</p>
+
+    <div class="card">
+      <h2>Create your hero</h2>
+      <label for="heroName">Hero's name</label>
+      <input id="heroName" placeholder="e.g. Maya" />
+
+      <label for="age">Age</label>
+      <input id="age" type="number" min="3" max="17" placeholder="e.g. 8" />
+
+      <label for="theme">Story world</label>
+      <select id="theme">
+        <option>Enchanted forest with friendly animals</option>
+        <option>Space explorers and silly robots</option>
+        <option>Dragon-riding sky kingdom</option>
+        <option>Underwater mermaid city</option>
+        <option>Dinosaur valley expedition</option>
+      </select>
+
+      <label>Exercise plan (from your physiotherapist)</label>
+      <p class="hint">The Storyteller never changes this plan — it only weaves it into the story.</p>
+      <div id="planRows">
+        <div class="plan-row"><input placeholder="Exercise, e.g. Heel raises" /><input placeholder="e.g. 10 reps" /></div>
+        <div class="plan-row"><input placeholder="Exercise, e.g. Wall sits" /><input placeholder="e.g. 20 seconds" /></div>
+      </div>
+      <button class="secondary" onclick="addPlanRow()">+ Add exercise</button>
+      <br />
+      <button onclick="startGame()">Begin the adventure</button>
+    </div>
+  </section>
+
+  <!-- ================= GAME SCREEN ================= -->
+  <section id="game" class="hidden">
+    <h1 id="gameTitle">🗺️ QuestRehab</h1>
+    <p class="subtitle" id="heroLine"></p>
+
+    <!-- Signature: the adventure map fills in as chapters complete -->
+    <div class="map">
+      <svg id="mapSvg" viewBox="0 0 600 72" aria-hidden="true"></svg>
+      <p class="map-label" id="mapLabel"></p>
+    </div>
+
+    <!-- Latest story chapter -->
+    <div class="card" id="chapterCard">
+      <p class="chapter-eyebrow" id="chapterEyebrow">Prologue</p>
+      <h2 id="chapterTitle">Your story begins…</h2>
+      <p class="story-text" id="storyText">
+        A brand-new adventure is waiting. Complete your first quest below
+        and the Storyteller will write what happens next!
+      </p>
+      <p class="encouragement" id="encouragement"></p>
+      <div class="adult-flag hidden" id="adultFlag">
+        💗 The Storyteller noticed something that a grown-up should know about.
+        Please tell a parent and your physiotherapist how it felt today.
+      </div>
+    </div>
+
+    <!-- Today's quest -->
+    <div class="card quest-card">
+      <p class="chapter-eyebrow">Today's quest</p>
+      <p class="quest-title" id="questExercise"></p>
+      <p class="quest-amount" id="questAmount"></p>
+      <p class="quest-reason" id="questReason"></p>
+      <textarea id="childNote" placeholder="How did it feel? (optional — tell the Storyteller!)"></textarea>
+      <button id="completeBtn" onclick="completeQuest()">⭐ Quest complete!</button>
+    </div>
+
+    <div class="loading hidden" id="loading">📜 The Storyteller is writing your next chapter…</div>
+    <button class="secondary" onclick="resetGame()">Start a new adventure</button>
+  </section>
+
+</div>
+
+<script>
+// =================================================================
+// Frontend logic — talks to the three API routes in server.js
+// =================================================================
+
+async function api(path, body) {
+  const res = await fetch(path, {
+    method: body ? "POST" : "GET",
+    headers: { "Content-Type": "application/json" },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (!res.ok) throw new Error((await res.json()).error || "Request failed");
+  return res.json();
+}
+
+// ---------- Setup screen ----------
+function addPlanRow() {
+  const row = document.createElement("div");
+  row.className = "plan-row";
+  row.innerHTML = '<input placeholder="Exercise" /><input placeholder="Amount" />';
+  document.getElementById("planRows").appendChild(row);
+}
+
+async function startGame() {
+  const exercisePlan = [...document.querySelectorAll(".plan-row")]
+    .map((r) => {
+      const [ex, amt] = r.querySelectorAll("input");
+      return { exercise: ex.value.trim(), amount: amt.value.trim() };
+    })
+    .filter((e) => e.exercise);
+
+  if (!document.getElementById("heroName").value.trim() || exercisePlan.length === 0) {
+    alert("Please add a hero name and at least one exercise.");
+    return;
+  }
+
+  const state = await api("/api/new-game", {
+    heroName: document.getElementById("heroName").value.trim(),
+    age: Number(document.getElementById("age").value) || 8,
+    theme: document.getElementById("theme").value,
+    exercisePlan,
+  });
+  showGame(state);
+}
+
+// ---------- Game screen ----------
+function showGame(state) {
+  document.getElementById("setup").classList.add("hidden");
+  document.getElementById("game").classList.remove("hidden");
+  document.getElementById("heroLine").textContent =
+    `The adventures of ${state.hero.name} — ${state.theme}`;
+  document.getElementById("questExercise").textContent = state.currentQuest.exercise;
+  document.getElementById("questAmount").textContent = state.currentQuest.amount;
+  document.getElementById("questReason").textContent =
+    state.currentQuest.story_reason ? `…${state.currentQuest.story_reason}` : "";
+  drawMap(state.chaptersCompleted);
+}
+
+function drawMap(done) {
+  const totalStops = 10; // one journey "season" = 10 chapters
+  const svg = document.getElementById("mapSvg");
+  let d = "M 20 50";
+  const pts = [];
+  for (let i = 0; i < totalStops; i++) {
+    const x = 20 + (i * 560) / (totalStops - 1);
+    const y = i % 2 === 0 ? 50 : 22; // gentle zig-zag path
+    pts.push([x, y]);
+    if (i > 0) d += ` Q ${x - 28} ${y === 50 ? 22 : 50}, ${x} ${y}`;
+  }
+  svg.innerHTML =
+    `<path class="path-line" d="${d}" />` +
+    pts
+      .map(
+        ([x, y], i) =>
+          `<circle class="stop ${i < done % totalStops || (done > 0 && done % totalStops === 0 && i < totalStops) ? "done" : ""}"
+             cx="${x}" cy="${y}" r="9" />`
+      )
+      .join("");
+  document.getElementById("mapLabel").textContent =
+    done === 0 ? "Your journey starts here" : `${done} chapter${done === 1 ? "" : "s"} of bravery so far`;
+}
+
+async function completeQuest() {
+  const btn = document.getElementById("completeBtn");
+  btn.disabled = true;
+  document.getElementById("loading").classList.remove("hidden");
+
+  try {
+    const state = await api("/api/state");
+    const { agentReply, state: newState } = await api("/api/complete-quest", {
+      completed: [state.currentQuest],
+      childNote: document.getElementById("childNote").value.trim(),
+    });
+
+    // Render the new chapter
+    document.getElementById("chapterEyebrow").textContent =
+      `Chapter ${newState.chaptersCompleted}`;
+    document.getElementById("chapterTitle").textContent = agentReply.chapter_title;
+    document.getElementById("storyText").textContent = agentReply.story_text;
+    document.getElementById("encouragement").textContent = agentReply.encouragement;
+    document.getElementById("adultFlag").classList.toggle("hidden", !agentReply.flag_for_adult);
+    document.getElementById("childNote").value = "";
+    showGame(newState);
+    document.getElementById("chapterCard").scrollIntoView({ behavior: "smooth" });
+  } catch (err) {
+    alert("The Storyteller stumbled: " + err.message);
+  } finally {
+    btn.disabled = false;
+    document.getElementById("loading").classList.add("hidden");
+  }
+}
+
+async function resetGame() {
+  if (!confirm("Start a completely new adventure? The old story will be lost.")) return;
+  await api("/api/reset", {});
+  location.reload();
+}
+
+// ---------- On page load: resume a saved game if one exists ----------
+(async () => {
+  const state = await api("/api/state");
+  if (state) showGame(state);
+})();
+</script>
+</body>
+</html>
