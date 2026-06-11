@@ -79,10 +79,6 @@ QuestRehab is a motivation and storytelling tool. It does not provide medical
 advice, and never alters the exercise plan prescribed by a licensed
 physiotherapist.
 
----
-
-## Hackathon submission checklist (delete before submitting)
-
 - [ ] Register before **June 12, 12:00 PM Pacific**
 - [ ] Public GitHub repo with this README
 - [ ] Record demo video (show: new game → complete quest → adaptive chapter →
