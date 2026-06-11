@@ -78,10 +78,3 @@ Azure OpenAI / Foundry model  ←— Storyteller agent (system prompt = agent po
 QuestRehab is a motivation and storytelling tool. It does not provide medical
 advice, and never alters the exercise plan prescribed by a licensed
 physiotherapist.
-
-- [ ] Register before **June 12, 12:00 PM Pacific**
-- [ ] Public GitHub repo with this README
-- [ ] Record demo video (show: new game → complete quest → adaptive chapter →
-      the "missed day" kindness moment → pain note triggering the adult flag)
-- [ ] Submit before **June 14, 11:59 PM Pacific**
-- [ ] Mention GitHub Copilot usage in the submission (Creative Apps track tool)
