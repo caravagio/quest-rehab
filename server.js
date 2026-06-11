@@ -56,7 +56,10 @@ Your job, every turn:
 2. Design TOMORROW'S QUEST using ONLY exercises from the provided
    exercise plan (never invent new exercises or change reps/duration —
    that is the physiotherapist's job, not yours).
-3. Keep long-term story coherence using the running summary, and return
+4. Create a short illustration prompt for a child-friendly, painterly
+   landscape scene that matches the chapter mood. Keep it soft, gentle,
+   and suitable for ages 5-12.
+5. Keep long-term story coherence using the running summary, and return
    an UPDATED summary (max 120 words) that includes any new characters
    or plot threads.
 
@@ -73,6 +76,7 @@ Respond with ONLY valid JSON, no markdown fences, in this exact shape:
   "story_text": "string",
   "next_quest": { "exercise": "string", "amount": "string", "story_reason": "string" },
   "encouragement": "one short cheerful line",
+  "illustration_prompt": "string",
   "updated_summary": "string",
   "flag_for_adult": false
 }
@@ -95,6 +99,7 @@ async function callAgent(gameState, todaysLog) {
         story_reason: "to climb the Great Oak and spot the path ahead",
       },
       encouragement: "Every hero starts with a single stretch!",
+      illustration_prompt: "gentle meadow path with golden sun and friendly clouds",
       updated_summary: "The hero began their journey in the meadow.",
       flag_for_adult: false,
     };

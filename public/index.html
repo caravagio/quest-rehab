@@ -67,6 +67,14 @@
     text-transform: uppercase; color: var(--grass-dark);
   }
   .card h2 { font-size: 1.45rem; margin: 6px 0 12px; }
+  .chapter-illustration {
+    margin: 0 0 14px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 2px solid rgba(63,138,76,0.16);
+    background: linear-gradient(180deg, #FDF7E4 0%, #F4EBCF 100%);
+  }
+  .chapter-illustration svg { display: block; width: 100%; height: auto; }
   .story-text { font-size: 1.06rem; line-height: 1.65; }
   .encouragement {
     margin-top: 14px; font-weight: 700; color: var(--berry); font-style: italic;
@@ -168,6 +176,7 @@
     <div class="card" id="chapterCard">
       <p class="chapter-eyebrow" id="chapterEyebrow">Prologue</p>
       <h2 id="chapterTitle">Your story begins…</h2>
+      <div class="chapter-illustration" id="chapterIllustration" aria-hidden="true"></div>
       <p class="story-text" id="storyText">
         A brand-new adventure is waiting. Complete your first quest below
         and the Storyteller will write what happens next!
@@ -251,6 +260,65 @@ function showGame(state) {
   document.getElementById("questReason").textContent =
     state.currentQuest.story_reason ? `…${state.currentQuest.story_reason}` : "";
   drawMap(state.chaptersCompleted);
+  renderChapterIllustration(null, state);
+}
+
+function renderChapterIllustration(agentReply, state) {
+  const prompt = agentReply?.illustration_prompt || "";
+  const theme = state?.theme || "";
+  const title = agentReply?.chapter_title || "";
+  const storyText = agentReply?.story_text || "";
+  const seed = `${theme} ${title} ${storyText} ${prompt}`.toLowerCase();
+
+  const isSpace = /space|robot|planet|star|galaxy|rocket/.test(seed);
+  const isOcean = /underwater|mermaid|sea|wave|ocean|reef|fish/.test(seed);
+  const isSky = /sky|cloud|dragon|castle|wind|kite/.test(seed);
+  const isForest = /forest|tree|meadow|path|animal|oak|leaf|briar/.test(seed);
+
+  const skyTop = isSpace ? "#0f1d4f" : isOcean ? "#9dcff3" : isSky ? "#bfe9f9" : "#cfe8f8";
+  const skyBottom = isSpace ? "#2d3f73" : isOcean ? "#f2efd0" : isSky ? "#f8f3c5" : "#f8edbf";
+  const hillColor = isSpace ? "#2a4a5f" : isOcean ? "#5aa9c4" : isSky ? "#76b86d" : "#61b36e";
+  const groundColor = isSpace ? "#55707a" : isOcean ? "#84c3b0" : isSky ? "#8ece71" : "#8fce52";
+  const accentColor = isSpace ? "#f1b46d" : isOcean ? "#f39c7f" : isSky ? "#ffca4b" : "#ff8fab";
+  const treeColor = isSpace ? "#3f5564" : isOcean ? "#4f7a69" : isSky ? "#3f7b4d" : "#4a8b47";
+
+  const svg = `
+    <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A gentle illustrated scene for the chapter">
+      <defs>
+        <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="${skyTop}" />
+          <stop offset="100%" stop-color="${skyBottom}" />
+        </linearGradient>
+        <linearGradient id="hillGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="${hillColor}" />
+          <stop offset="100%" stop-color="${groundColor}" />
+        </linearGradient>
+      </defs>
+      <rect x="0" y="0" width="320" height="180" rx="18" fill="url(#skyGrad)" />
+      <circle cx="250" cy="55" r="28" fill="${accentColor}" opacity="0.92" />
+      <ellipse cx="72" cy="60" rx="34" ry="18" fill="#ffffff" opacity="0.65" />
+      <ellipse cx="112" cy="54" rx="24" ry="12" fill="#ffffff" opacity="0.55" />
+      ${isSpace ? '<circle cx="70" cy="112" r="2.6" fill="#fff" opacity="0.85" /><circle cx="95" cy="90" r="1.8" fill="#fff" opacity="0.7" /><circle cx="210" cy="92" r="2.4" fill="#fff" opacity="0.75" />' : ""}
+      <path d="M0 120 C50 96, 90 106, 135 120 C170 132, 215 140, 320 110 L320 180 L0 180 Z" fill="url(#hillGrad)" opacity="0.9" />
+      <path d="M0 142 C50 122, 90 132, 140 142 C175 150, 230 156, 320 132 L320 180 L0 180 Z" fill="${groundColor}" opacity="0.85" />
+      ${isSpace ? '<path d="M132 98 L152 78 L170 96 L158 100 L166 118 L146 110 Z" fill="#f8d7a1" opacity="0.9" />' : ""}
+      ${isOcean ? '<path d="M0 148 C42 138, 75 144, 112 154 C146 162, 196 164, 320 148" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="0.65" />' : ""}
+      ${isForest || !isSpace && !isOcean ? `<g opacity="0.95">
+        <rect x="42" y="112" width="10" height="28" rx="4" fill="${treeColor}" />
+        <circle cx="47" cy="108" r="14" fill="${treeColor}" />
+        <circle cx="39" cy="108" r="12" fill="${treeColor}" />
+        <circle cx="56" cy="108" r="12" fill="${treeColor}" />
+        <rect x="242" y="112" width="10" height="28" rx="4" fill="${treeColor}" />
+        <circle cx="247" cy="108" r="14" fill="${treeColor}" />
+        <circle cx="239" cy="108" r="12" fill="${treeColor}" />
+        <circle cx="254" cy="108" r="12" fill="${treeColor}" />
+      </g>` : ""}
+      <path d="M96 132 C112 124, 128 124, 146 132 C132 140, 120 142, 96 132 Z" fill="#fff3b3" opacity="0.8" />
+      <path d="M188 138 C205 130, 219 130, 236 138 C220 146, 208 148, 188 138 Z" fill="#fff3b3" opacity="0.72" />
+    </svg>
+  `;
+
+  document.getElementById("chapterIllustration").innerHTML = svg;
 }
 
 function drawMap(done) {
@@ -296,6 +364,7 @@ async function completeQuest() {
     document.getElementById("storyText").textContent = agentReply.story_text;
     document.getElementById("encouragement").textContent = agentReply.encouragement;
     document.getElementById("adultFlag").classList.toggle("hidden", !agentReply.flag_for_adult);
+    renderChapterIllustration(agentReply, newState);
     document.getElementById("childNote").value = "";
     showGame(newState);
     document.getElementById("chapterCard").scrollIntoView({ behavior: "smooth" });
